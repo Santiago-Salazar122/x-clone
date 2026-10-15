@@ -1,0 +1,122 @@
+
+:root {
+  font-family: Arial, Helvetica, sans-serif;
+  color: #0f1419;
+  background: #ffffff;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  --border: #eff3f4;
+  --text-secondary: #536471;
+  --button-bg: #0f1419;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background: #ffffff;
+}
+
+#root {
+  width: 100%;
+  max-width: 600px;
+  min-height: 100vh;
+  margin: 0 auto;
+  border-left: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+}
+
+.home-page {
+  width: 100%;
+  text-align: left;
+}
+
+.home-page header {
+  padding: 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.home-page h1 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+.post-box {
+  padding: 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.post-box h2 {
+  margin: 0 0 12px;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.post-box textarea {
+  display: block;
+  width: 100%;
+  min-height: 90px;
+  padding: 12px 0;
+  resize: vertical;
+  border: none;
+  outline: none;
+  font: inherit;
+  font-size: 18px;
+  background: transparent;
+  color: inherit;
+}
+
+.post-box textarea::placeholder {
+  color: var(--text-secondary);
+}
+
+.post-box button {
+  display: block;
+  margin-left: auto;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 24px;
+  background: var(--button-bg);
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.post-box button:hover {
+  background: #272c30;
+}
+
+.post {
+  padding: 16px;
+  border-bottom: 1px solid var(--border);
+  overflow-wrap: anywhere;
+}
+
+.post h3 {
+  margin: 0 0 4px;
+  font-size: 16px;
+}
+
+.post p {
+  margin: 0 0 8px;
+  line-height: 1.5;
+}
+
+.post p:nth-child(2) {
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.post p:last-child {
+  margin-bottom: 0;
+}
