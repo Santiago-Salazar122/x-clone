@@ -13,12 +13,15 @@ import Profile from './pages/Profile'
 import { PostProvider } from './PostContext'
 import { AuthProvider } from './AuthContext'
 import ProtectedRoute from './components/ProtectedRoute'
+import Navbar from './components/Navbar'
 
 function App() {
   return (
     <AuthProvider>
       <PostProvider>
         <BrowserRouter>
+          <Navbar />
+
           <Routes>
             <Route
               path="/"

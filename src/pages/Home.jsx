@@ -7,7 +7,7 @@ function Home() {
   const navigate = useNavigate()
   const [text, setText] = useState('')
   const { posts, setPosts } = usePosts()
-  const { currentUser, logout } = useAuth()
+  const { currentUser, } = useAuth()
 
   const profileName = currentUser?.name || 'Santiago'
   const profileHandle = currentUser?.username || 'santi'
@@ -50,28 +50,12 @@ function Home() {
     <div className="home-page">
 
       <header>
-        <h1>Inicio</h1>
+  <h1>Inicio</h1>
 
-        <p>
-          Sesión iniciada: {profileName} (@{profileHandle})
-        </p>
-
-        <a href={`/users/${profileHandle}`}>
-          Ver mi perfil
-        </a>
-
-        <br />
-
-        <button
-          type="button"
-          onClick={() => {
-            logout()
-            navigate('/login')
-          }}
-        >
-          Cerrar sesión
-        </button>
-      </header>
+  <p>
+    Sesión iniciada: {profileName} (@{profileHandle})
+  </p>
+</header>
 
 
       <section className="post-box">

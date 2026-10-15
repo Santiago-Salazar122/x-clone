@@ -49,6 +49,10 @@ function Login() {
           Iniciar sesión
         </button>
       </form>
+      <p>
+        ¿No tienes una cuenta?{' '}
+        <a href="/register">Crear cuenta</a>
+      </p>
     </div>
   )
 }
