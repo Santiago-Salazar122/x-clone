@@ -1,16 +1,19 @@
 
 :root {
   font-family: Arial, Helvetica, sans-serif;
-  color: #0f1419;
-  background: #ffffff;
+  color: #e7e9ea;
+  background: #000000;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
-  --border: #eff3f4;
-  --text-secondary: #536471;
-  --button-bg: #0f1419;
+  --background: #000000;
+  --surface: #16181c;
+  --border: #2f3336;
+  --text-secondary: #71767b;
+  --accent: #1d9bf0;
+  --accent-hover: #1a8cd8;
 }
 
 * {
@@ -21,7 +24,32 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  background: #ffffff;
+  background: var(--background);
+  color: #e7e9ea;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+button {
+  cursor: pointer;
 }
 
 #root {
@@ -31,85 +59,157 @@ body {
   margin: 0 auto;
   border-left: 1px solid var(--border);
   border-right: 1px solid var(--border);
+  background: var(--background);
 }
 
-.home-page {
+/* Menú de navegación */
+
+nav {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  gap: 12px;
+  padding: 16px 12px;
+  background: rgba(0, 0, 0, 0.92);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(12px);
+}
+
+nav a {
+  color: #e7e9ea;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+nav a:hover {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+nav button {
+  padding: 9px 14px;
+  border: 1px solid #536471;
+  border-radius: 22px;
+  background: transparent;
+  color: #e7e9ea;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+nav button:hover {
+  background: #181818;
+}
+
+/* Inicio */
+
+.home-page,
+.profile-page {
   width: 100%;
   text-align: left;
 }
 
-.home-page header {
-  padding: 16px;
+.home-page header,
+.profile-page > header {
+  padding: 18px 16px;
   border-bottom: 1px solid var(--border);
 }
 
-.home-page h1 {
+.home-page h1,
+.profile-page > header h1 {
   margin: 0;
-  font-size: 22px;
-  font-weight: 700;
-  letter-spacing: 0;
+  font-size: 21px;
+  font-weight: 800;
 }
 
+.home-page header p {
+  margin: 10px 0 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+/* Crear publicación */
+
 .post-box {
-  padding: 16px;
+  padding: 18px 16px;
   border-bottom: 1px solid var(--border);
 }
 
 .post-box h2 {
   margin: 0 0 12px;
-  font-size: 20px;
+  font-size: 19px;
   font-weight: 700;
 }
 
 .post-box textarea {
   display: block;
   width: 100%;
-  min-height: 90px;
-  padding: 12px 0;
+  min-height: 100px;
+  padding: 14px 0;
   resize: vertical;
   border: none;
   outline: none;
-  font: inherit;
   font-size: 18px;
+  line-height: 1.5;
   background: transparent;
-  color: inherit;
+  color: #e7e9ea;
 }
 
 .post-box textarea::placeholder {
   color: var(--text-secondary);
 }
 
+.post-box textarea:focus {
+  outline: none;
+}
+
 .post-box button {
   display: block;
-  margin-left: auto;
+  margin: 10px 0 0 auto;
   padding: 10px 20px;
   border: none;
   border-radius: 24px;
-  background: var(--button-bg);
+  background: var(--accent);
   color: #ffffff;
   font-size: 15px;
   font-weight: 700;
-  cursor: pointer;
+  transition: background 0.2s ease;
 }
 
 .post-box button:hover {
-  background: #272c30;
+  background: var(--accent-hover);
+}
+
+/* Publicaciones */
+
+.feed > h2 {
+  padding: 0 16px;
+  font-size: 19px;
 }
 
 .post {
   padding: 16px;
   border-bottom: 1px solid var(--border);
   overflow-wrap: anywhere;
+  transition: background 0.2s ease;
+}
+
+.post:hover {
+  background: rgba(255, 255, 255, 0.025);
 }
 
 .post h3 {
-  margin: 0 0 4px;
-  font-size: 16px;
+  margin: 0 0 5px;
+  font-size: 15px;
+  font-weight: 700;
 }
 
 .post p {
-  margin: 0 0 8px;
+  margin: 0 0 9px;
   line-height: 1.5;
+  white-space: pre-wrap;
 }
 
 .post p:nth-child(2) {
@@ -117,6 +217,255 @@ body {
   font-size: 14px;
 }
 
-.post p:last-child {
-  margin-bottom: 0;
+.post button {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 22px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 14px;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.post button:hover {
+  background: rgba(249, 24, 128, 0.12);
+  color: #f91880;
+}
+
+/* Perfil */
+
+.profile-info {
+  padding: 20px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.profile-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 76px;
+  height: 76px;
+  margin-bottom: 14px;
+  border: 3px solid var(--background);
+  border-radius: 50%;
+  background: var(--accent);
+  color: #ffffff;
+  font-size: 30px;
+  font-weight: 800;
+}
+
+.profile-info h2 {
+  margin: 0 0 4px;
+  font-size: 20px;
+}
+
+.profile-info > p {
+  margin: 6px 0;
+  line-height: 1.5;
+}
+
+.profile-info > p:nth-of-type(1) {
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.profile-info > p:nth-of-type(2) {
+  margin-top: 12px;
+  font-size: 15px;
+}
+
+.profile-info button {
+  margin-top: 14px;
+  padding: 9px 17px;
+  border: 1px solid #536471;
+  border-radius: 22px;
+  background: transparent;
+  color: #e7e9ea;
+  font-weight: 700;
+}
+
+.profile-info button:hover {
+  background: #181818;
+}
+
+/* Formulario de edición del perfil */
+
+.edit-profile-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.edit-profile-form label {
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.edit-profile-form input,
+.edit-profile-form textarea,
+input,
+form textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--background);
+  color: #e7e9ea;
+  outline: none;
+}
+
+.edit-profile-form input:focus,
+.edit-profile-form textarea:focus,
+input:focus,
+form textarea:focus {
+  border-color: var(--accent);
+}
+
+/* Inicio de sesión y registro */
+
+#root > div:has(form) {
+  padding: 24px 20px;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 20px;
+}
+
+form input {
+  min-height: 48px;
+}
+
+form button {
+  min-height: 44px;
+  padding: 11px 18px;
+  border: none;
+  border-radius: 24px;
+  background: #eff3f4;
+  color: #0f1419;
+  font-weight: 700;
+}
+
+form button:hover {
+  background: #d7dbdc;
+}
+
+form p {
+  margin: 0;
+  color: #f4212e;
+  font-size: 14px;
+}
+
+/* Pantallas pequeñas */
+
+@media (max-width: 480px) {
+  #root {
+    border-left: none;
+    border-right: none;
+  }
+
+  nav {
+    gap: 8px;
+    padding: 14px 8px;
+  }
+
+  nav a {
+    font-size: 13px;
+  }
+
+  nav button {
+    padding: 8px 10px;
+    font-size: 12px;
+  }
+
+  .post-box,
+  .post,
+  .profile-info {
+    padding: 15px 13px;
+  }
+}
+
+
+/* Navegación vertical estilo X */
+.navbar {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  width: 250px;
+  min-height: 100vh;
+  padding: 20px 16px;
+  background: #000000;
+  border-right: 1px solid var(--border);
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 100;
+}
+
+.navbar-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  margin-bottom: 12px;
+  color: #e7e9ea;
+  font-size: 36px;
+  font-weight: bold;
+  text-decoration: none;
+  border-radius: 50%;
+}
+
+.navbar-logo:hover {
+  background: #181818;
+}
+
+.navbar-link {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 28px;
+  background: transparent;
+  color: #e7e9ea;
+  font-size: 18px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.navbar-link:hover {
+  background: #181818;
+}
+
+.navbar-user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  margin-top: auto;
+  padding: 12px 8px;
+  color: #e7e9ea;
+  overflow-wrap: anywhere;
+}
+
+.navbar-user span {
+  font-size: 14px;
+}
+
+.navbar-logout {
+  margin-top: 8px;
+  font-family: inherit;
+  text-align: left;
 }
