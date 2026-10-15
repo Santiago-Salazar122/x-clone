@@ -11,26 +11,41 @@ import Login from './pages/Login'
 import Register from './pages/Register'
 import Profile from './pages/Profile'
 import { PostProvider } from './PostContext'
+import { AuthProvider } from './AuthContext'
+import ProtectedRoute from './components/ProtectedRoute'
 
 function App() {
   return (
-    <PostProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route
-            path="/users/:username"
-            element={<Profile />}
-          />
-          <Route
-            path="*"
-            element={<Navigate to="/" replace />}
-          />
-        </Routes>
-      </BrowserRouter>
-    </PostProvider>
+    <AuthProvider>
+      <PostProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route
+              path="/"
+              element={
+                <ProtectedRoute>
+                  <Home />
+                </ProtectedRoute>
+              }
+            />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route
+              path="/users/:username"
+              element={
+                <ProtectedRoute>
+                  <Profile />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="*"
+              element={<Navigate to="/" replace />}
+            />
+          </Routes>
+        </BrowserRouter>
+      </PostProvider>
+    </AuthProvider>
   )
 }
 

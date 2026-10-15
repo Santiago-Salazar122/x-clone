@@ -1,11 +1,9 @@
-
-import { useParams } from 'react-router-dom'
+import { useParams, Link } from 'react-router-dom'
 import { usePosts } from '../PostContext'
 import { useState, useEffect } from 'react'
 
 const defaultProfile = {
-  name: 'Santiago',
-  handle: 'santi',
+  name: '',
   bio: 'Este es mi perfil en X Clone.'
 }
 
@@ -15,16 +13,25 @@ function getSavedProfile(username) {
       `x-clone-profile-${username}`
     )
 
-    return savedProfile
-      ? JSON.parse(savedProfile)
-      : {
-        ...defaultProfile,
-        name: username === 'santi' ? 'Santiago' : username
-      }
+    if (savedProfile) {
+      return JSON.parse(savedProfile)
+    }
+
+    const savedUsers = localStorage.getItem('x-clone-users')
+    const users = savedUsers ? JSON.parse(savedUsers) : []
+
+    const account = users.find(
+      (user) => user.username === username
+    )
+
+    return {
+      ...defaultProfile,
+      name: account ? account.name : username
+    }
   } catch {
     return {
       ...defaultProfile,
-      name: username === 'santi' ? 'Santiago' : username
+      name: username
     }
   }
 }
@@ -33,37 +40,40 @@ function Profile() {
   const { username } = useParams()
   const { posts } = usePosts()
 
+  const [name, setName] = useState('')
+  const [bio, setBio] = useState('')
+  const [isEditing, setIsEditing] = useState(false)
+
+  useEffect(() => {
+    const profile = getSavedProfile(username)
+
+    setName(profile.name)
+    setBio(profile.bio)
+    setIsEditing(false)
+  }, [username])
+
   const userPosts = posts.filter(
     (post) => post.username.replace('@', '') === username
   )
 
-  const [name, setName] = useState(
-    () => getSavedProfile(username).name
-  )
-
-  const [bio, setBio] = useState(
-    () => getSavedProfile(username).bio
-  )
-
-  const [handle, setHandle] = useState(
-    () => getSavedProfile(username).handle || username
-  )
-
-  const [isEditing, setIsEditing] = useState(false)
-
-  useEffect(() => {
+  function saveProfile() {
     localStorage.setItem(
       `x-clone-profile-${username}`,
-      JSON.stringify({ name, handle, bio })
+      JSON.stringify({ name, bio })
     )
-  }, [username, name, handle, bio])
+
+    setIsEditing(false)
+  }
 
   return (
     <div className="profile-page">
       <header>
         <h1>Perfil</h1>
-      </header>
 
+        <Link to="/">
+          ← Volver al inicio
+        </Link>
+      </header>
 
       <section className="profile-info">
         <div className="profile-avatar">
@@ -71,7 +81,7 @@ function Profile() {
         </div>
 
         <h2>{name}</h2>
-        <p>@{handle}</p>
+        <p>@{username}</p>
         <p>{bio}</p>
 
         {isEditing && (
@@ -84,16 +94,6 @@ function Profile() {
               onChange={(event) => setName(event.target.value)}
             />
 
-            <label htmlFor="profile-handle">Nombre de usuario</label>
-            <input
-              id="profile-handle"
-              type="text"
-              value={handle}
-              onChange={(event) =>
-                setHandle(event.target.value.replace('@', '').trim())
-              }
-            />
-
             <label htmlFor="profile-bio">Biografía</label>
             <textarea
               id="profile-bio"
@@ -104,14 +104,19 @@ function Profile() {
           </div>
         )}
 
-        <button
-          type="button"
-          onClick={() => setIsEditing(!isEditing)}
-        >
-          {isEditing ? 'Terminar edición' : 'Editar perfil'}
-        </button>
+        {isEditing ? (
+          <button type="button" onClick={saveProfile}>
+            Guardar perfil
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setIsEditing(true)}
+          >
+            Editar perfil
+          </button>
+        )}
       </section>
-
 
       <section className="feed">
         <h2>Publicaciones</h2>
