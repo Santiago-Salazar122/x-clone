@@ -1,38 +1,46 @@
 
 import { useState } from 'react'
+import { usePosts } from '../PostContext'
 
 function Home() {
-  const [texto, setTexto] = useState('')
-  const [publicaciones, setPublicaciones] = useState([
-    {
-      id: 1,
-      nombre: 'Santiago',
-      usuario: '@santi',
-      contenido: '¡Bienvenidos a mi clon de X! Estoy construyendo mi propia red social.'
-    },
-    {
-      id: 2,
-      nombre: 'Comunidad X',
-      usuario: '@comunidad',
-      contenido: 'Este es el espacio donde compartiremos ideas, noticias y opiniones.'
-    }
-  ])
+  const [text, setText] = useState('')
+  const { posts, setPosts } = usePosts()
 
-  function publicar() {
-    if (texto.trim() === '') {
+  function publishPost() {
+    if (text.trim() === '') {
       return
     }
 
-    const nuevaPublicacion = {
+    const newPost = {
       id: Date.now(),
-      nombre: 'Santiago',
-      usuario: '@santi',
-      contenido: texto
+      name: 'Santiago',
+      username: '@santi',
+      content: text,
+      likes: 0,
+      liked: false
     }
 
-    setPublicaciones([nuevaPublicacion, ...publicaciones])
-    setTexto('')
+    setPosts([newPost, ...posts])
+    setText('')
   }
+
+
+  function toggleLike(postId) {
+    setPosts((currentPosts) =>
+      currentPosts.map((post) => {
+        if (post.id === postId) {
+          return {
+            ...post,
+            likes: post.liked ? post.likes - 1 : post.likes + 1,
+            liked: !post.liked
+          }
+        }
+
+        return post
+      })
+    )
+  }
+
 
   return (
     <div className="home-page">
@@ -46,21 +54,29 @@ function Home() {
         <textarea
           placeholder="¿Qué está pasando?"
           rows="3"
-          value={texto}
-          onChange={(evento) => setTexto(evento.target.value)}
+          value={text}
+          onChange={(event) => setText(event.target.value)}
         />
 
-        <button type="button" onClick={publicar}>
-          Postear
+        <button type="button" onClick={publishPost}>
+          Publicar
         </button>
       </section>
 
       <section className="feed">
-        {publicaciones.map((post) => (
+        {posts.map((post) => (
           <article className="post" key={post.id}>
-            <h3>{post.nombre}</h3>
-            <p>{post.usuario}</p>
-            <p>{post.contenido}</p>
+            <h3>{post.name}</h3>
+            <p>{post.username}</p>
+            <p>{post.content}</p>
+
+            <button
+              type="button"
+              onClick={() => toggleLike(post.id)}
+            >
+              {post.liked ? '♥' : '♡'} {post.likes} Me gusta
+            </button>
+
           </article>
         ))}
       </section>
