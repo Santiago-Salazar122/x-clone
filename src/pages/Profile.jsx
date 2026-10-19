@@ -1,6 +1,8 @@
 import { useParams, Link } from 'react-router-dom'
 import { usePosts } from '../PostContext'
 import { useState, useEffect } from 'react'
+import { useAuth } from '../AuthContext'
+import { useFollows } from '../FollowContext'
 
 const defaultProfile = {
   name: '',
@@ -39,6 +41,18 @@ function getSavedProfile(username) {
 function Profile() {
   const { username } = useParams()
   const { posts } = usePosts()
+  const { currentUser } = useAuth()
+
+  const {
+    followUser,
+    isFollowing,
+    getFollowersCount,
+    getFollowingCount
+  } = useFollows()
+
+  const isOwnProfile = currentUser?.username === username
+  const following = isFollowing(username)
+
 
   const [name, setName] = useState('')
   const [bio, setBio] = useState('')
@@ -83,8 +97,27 @@ function Profile() {
         <h2>{name}</h2>
         <p>@{username}</p>
         <p>{bio}</p>
+        <div className="profile-stats">
+          <p>
+            <strong>{getFollowingCount(username)}</strong> Seguidos
+          </p>
 
-        {isEditing && (
+          <p>
+            <strong>{getFollowersCount(username)}</strong> Seguidores
+          </p>
+        </div>
+
+        {!isOwnProfile && (
+          <button
+            type="button"
+            onClick={() => followUser(username)}
+            disabled={following}
+          >
+            {following ? 'Siguiendo' : 'Seguir'}
+          </button>
+        )}
+
+        {isOwnProfile && isEditing && (
           <div className="edit-profile-form">
             <label htmlFor="profile-name">Nombre</label>
             <input
@@ -104,21 +137,24 @@ function Profile() {
           </div>
         )}
 
-        {isEditing ? (
-          <button type="button" onClick={saveProfile}>
-            Guardar perfil
-          </button>
-        ) : (
-          <button
-            type="button"
-            onClick={() => setIsEditing(true)}
-          >
-            Editar perfil
-          </button>
+        {isOwnProfile && (
+          isEditing ? (
+            <button type="button" onClick={saveProfile}>
+              Guardar perfil
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setIsEditing(true)}
+            >
+              Editar perfil
+            </button>
+          )
         )}
       </section>
 
       <section className="feed">
+
         <h2>Publicaciones</h2>
 
         {userPosts.length === 0 ? (

@@ -1,3 +1,4 @@
+
 import { useState } from 'react'
 import { useAuth } from '../AuthContext'
 import { useNavigate } from 'react-router-dom'
@@ -7,6 +8,7 @@ function Register() {
   const navigate = useNavigate()
 
   const [name, setName] = useState('')
+  const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -15,18 +17,24 @@ function Register() {
     event.preventDefault()
     setError('')
 
-    if (!name.trim() || !email.trim() || !password.trim()) {
+    if (
+      !name.trim() ||
+      !username.trim() ||
+      !email.trim() ||
+      !password
+    ) {
       setError('Completa todos los campos.')
       return
     }
 
-    if (password.length < 6) {
-      setError('La contraseña debe tener al menos 6 caracteres.')
+    if (password.length < 8) {
+      setError('La contraseña debe tener al menos 8 caracteres.')
       return
     }
 
     const result = register({
       name: name.trim(),
+      username: username.trim().toLowerCase(),
       email: email.trim().toLowerCase(),
       password
     })
@@ -49,6 +57,13 @@ function Register() {
           placeholder="Nombre completo"
           value={name}
           onChange={(event) => setName(event.target.value)}
+        />
+
+        <input
+          type="text"
+          placeholder="Nombre de usuario"
+          value={username}
+          onChange={(event) => setUsername(event.target.value)}
         />
 
         <input

@@ -12,6 +12,7 @@ export function AuthProvider({ children }) {
     }
   })
 
+
   function register(user) {
     const savedUsers = localStorage.getItem('x-clone-users')
     const users = savedUsers ? JSON.parse(savedUsers) : []
@@ -27,9 +28,20 @@ export function AuthProvider({ children }) {
       }
     }
 
+    const usernameExists = users.some(
+      (savedUser) => savedUser.username === user.username
+    )
+
+    if (usernameExists) {
+      return {
+        success: false,
+        message: 'Este nombre de usuario ya está ocupado.'
+      }
+    }
+
     const newUser = {
       ...user,
-      username: user.email.split('@')[0]
+      createdAt: new Date().toISOString()
     }
 
     users.push(newUser)
@@ -41,6 +53,7 @@ export function AuthProvider({ children }) {
 
     return { success: true }
   }
+
 
   function login(email, password) {
     const savedUsers = localStorage.getItem('x-clone-users')

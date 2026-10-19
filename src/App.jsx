@@ -14,40 +14,44 @@ import { PostProvider } from './PostContext'
 import { AuthProvider } from './AuthContext'
 import ProtectedRoute from './components/ProtectedRoute'
 import Navbar from './components/Navbar'
+import { FollowProvider } from './FollowContext'
+
 
 function App() {
   return (
     <AuthProvider>
-      <PostProvider>
-        <BrowserRouter>
-          <Navbar />
+      <FollowProvider>
+        <PostProvider>
+          <BrowserRouter>
+            <Navbar />
 
-          <Routes>
-            <Route
-              path="/"
-              element={
-                <ProtectedRoute>
-                  <Home />
-                </ProtectedRoute>
-              }
-            />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route
-              path="/users/:username"
-              element={
-                <ProtectedRoute>
-                  <Profile />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="*"
-              element={<Navigate to="/" replace />}
-            />
-          </Routes>
-        </BrowserRouter>
-      </PostProvider>
+            <Routes>
+              <Route
+                path="/"
+                element={
+                  <ProtectedRoute>
+                    <Home />
+                  </ProtectedRoute>
+                }
+              />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route
+                path="/users/:username"
+                element={
+                  <ProtectedRoute>
+                    <Profile />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="*"
+                element={<Navigate to="/" replace />}
+              />
+            </Routes>
+          </BrowserRouter>
+        </PostProvider>
+      </FollowProvider>
     </AuthProvider>
   )
 }
