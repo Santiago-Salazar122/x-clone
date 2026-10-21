@@ -1,27 +1,48 @@
+
 import { useState } from 'react'
 import { useAuth } from '../AuthContext'
 import { useNavigate } from 'react-router-dom'
 
 function Login() {
-  const { login } = useAuth()
+  const { setAuthenticatedUser } = useAuth()
   const navigate = useNavigate()
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
 
-  function handleLogin(event) {
+  async function handleLogin(event) {
     event.preventDefault()
     setError('')
+    setLoading(true)
 
-    const result = login(email, password)
+    try {
+      const response = await fetch('http://localhost:8080/api/users/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          email: email.trim().toLowerCase(),
+          password
+        })
+      })
 
-    if (!result.success) {
-      setError(result.message)
-      return
+      const data = await response.json()
+
+      if (!response.ok) {
+        setError(data.message || 'No se pudo iniciar sesión.')
+        return
+      }
+
+      setAuthenticatedUser(data)
+      navigate('/')
+    } catch {
+      setError('No se pudo conectar con el servidor.')
+    } finally {
+      setLoading(false)
     }
-
-    navigate('/')
   }
 
   return (
@@ -34,6 +55,7 @@ function Login() {
           placeholder="Correo electrónico"
           value={email}
           onChange={(event) => setEmail(event.target.value)}
+          required
         />
 
         <input
@@ -41,14 +63,16 @@ function Login() {
           placeholder="Contraseña"
           value={password}
           onChange={(event) => setPassword(event.target.value)}
+          required
         />
 
         {error && <p>{error}</p>}
 
-        <button type="submit">
-          Iniciar sesión
+        <button type="submit" disabled={loading}>
+          {loading ? 'Ingresando...' : 'Iniciar sesión'}
         </button>
       </form>
+
       <p>
         ¿No tienes una cuenta?{' '}
         <a href="/register">Crear cuenta</a>

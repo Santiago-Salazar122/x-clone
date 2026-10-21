@@ -78,6 +78,22 @@ export function AuthProvider({ children }) {
     return { success: true }
   }
 
+  function setAuthenticatedUser(user) {
+    const authenticatedUser = {
+      id: user.id,
+      name: user.name,
+      username: user.username,
+      email: user.email
+    }
+
+    localStorage.setItem(
+      'x-clone-current-user',
+      JSON.stringify(authenticatedUser)
+    )
+
+    setCurrentUser(authenticatedUser)
+  }
+
   function logout() {
     localStorage.removeItem('x-clone-current-user')
     setCurrentUser(null)
@@ -85,7 +101,13 @@ export function AuthProvider({ children }) {
 
   return (
     <AuthContext.Provider
-      value={{ currentUser, register, login, logout }}
+      value={{
+        currentUser,
+        register,
+        login,
+        logout,
+        setAuthenticatedUser
+      }}
     >
       {children}
     </AuthContext.Provider>

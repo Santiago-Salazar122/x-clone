@@ -1,10 +1,8 @@
 
 import { useState } from 'react'
-import { useAuth } from '../AuthContext'
 import { useNavigate } from 'react-router-dom'
 
 function Register() {
-  const { register } = useAuth()
   const navigate = useNavigate()
 
   const [name, setName] = useState('')
@@ -13,7 +11,7 @@ function Register() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
 
-  function handleRegister(event) {
+  async function handleRegister(event) {
     event.preventDefault()
     setError('')
 
@@ -32,19 +30,34 @@ function Register() {
       return
     }
 
-    const result = register({
-      name: name.trim(),
-      username: username.trim().toLowerCase(),
-      email: email.trim().toLowerCase(),
-      password
-    })
 
-    if (!result.success) {
-      setError(result.message)
-      return
+    try {
+      const response = await fetch('http://localhost:8080/api/users/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          name: name.trim(),
+          username: username.trim().toLowerCase(),
+          email: email.trim().toLowerCase(),
+          password
+        })
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        setError(data.message || 'No se pudo registrar la cuenta.')
+        return
+      }
+
+      navigate('/')
+
+    } catch (error) {
+      setError('No se pudo conectar con el servidor. Inténtalo de nuevo.')
     }
 
-    navigate('/')
   }
 
   return (
