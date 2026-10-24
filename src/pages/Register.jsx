@@ -52,7 +52,7 @@ function Register() {
         return
       }
 
-      navigate('/')
+      navigate('/login')
 
     } catch (error) {
       setError('No se pudo conectar con el servidor. Inténtalo de nuevo.')
