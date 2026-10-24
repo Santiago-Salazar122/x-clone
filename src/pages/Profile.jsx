@@ -57,27 +57,93 @@ function Profile() {
   const [name, setName] = useState('')
   const [bio, setBio] = useState('')
   const [isEditing, setIsEditing] = useState(false)
+  const [profileError, setProfileError] = useState('')
+
 
   useEffect(() => {
-    const profile = getSavedProfile(username)
+    let isActive = true
 
-    setName(profile.name)
-    setBio(profile.bio)
-    setIsEditing(false)
+    async function loadProfile() {
+      setProfileError('')
+
+      try {
+        const response = await fetch(
+          `http://localhost:8080/api/users/${encodeURIComponent(username)}`
+        )
+
+        if (!response.ok) {
+          throw new Error('No se pudo encontrar el usuario.')
+        }
+
+        const user = await response.json()
+
+        if (!isActive) return
+
+        const savedProfile = getSavedProfile(username)
+
+        setName(user.name || username)
+        setBio(savedProfile.bio || defaultProfile.bio)
+      } catch (error) {
+        if (!isActive) return
+
+        setProfileError(
+          'No se pudo cargar el perfil desde el servidor.'
+        )
+      }
+
+      setIsEditing(false)
+    }
+
+    loadProfile()
+
+    return () => {
+      isActive = false
+    }
   }, [username])
+
 
   const userPosts = posts.filter(
     (post) => post.username.replace('@', '') === username
   )
 
-  function saveProfile() {
-    localStorage.setItem(
-      `x-clone-profile-${username}`,
-      JSON.stringify({ name, bio })
-    )
 
-    setIsEditing(false)
+  async function saveProfile() {
+    try {
+      const response = await fetch(
+        `http://localhost:8080/api/users/${encodeURIComponent(username)}`,
+        {
+          method: 'PUT',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ name })
+        }
+      )
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(
+          data.message || 'No se pudo actualizar el nombre.'
+        )
+      }
+
+      localStorage.setItem(
+        `x-clone-profile-${username}`,
+        JSON.stringify({ name: data.name, bio })
+      )
+
+      setName(data.name)
+      setProfileError('')
+      setIsEditing(false)
+    } catch (error) {
+      setProfileError(
+        error.message || 'No se pudo guardar el perfil.'
+      )
+    }
   }
+
 
   return (
     <div className="profile-page">
@@ -97,6 +163,9 @@ function Profile() {
         <h2>{name}</h2>
         <p>@{username}</p>
         <p>{bio}</p>
+        {profileError && (
+          <p role="alert">{profileError}</p>
+        )}
         <div className="profile-stats">
           <p>
             <strong>{getFollowingCount(username)}</strong> Seguidos

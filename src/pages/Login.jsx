@@ -20,6 +20,7 @@ function Login() {
     try {
       const response = await fetch('http://localhost:8080/api/users/login', {
         method: 'POST',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json'
         },
