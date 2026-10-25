@@ -13,6 +13,10 @@ export function AuthProvider({ children }) {
     }
   })
 
+  const [token, setToken] = useState(() => {
+    return localStorage.getItem('x-clone-token') || null
+  })
+
   function setAuthenticatedUser(user) {
     const authenticatedUser = {
       id: user.id,
@@ -26,18 +30,26 @@ export function AuthProvider({ children }) {
       JSON.stringify(authenticatedUser)
     )
 
+    if (user.token) {
+      localStorage.setItem('x-clone-token', user.token)
+      setToken(user.token)
+    }
+
     setCurrentUser(authenticatedUser)
   }
 
   function logout() {
     localStorage.removeItem('x-clone-current-user')
+    localStorage.removeItem('x-clone-token')
     setCurrentUser(null)
+    setToken(null)
   }
 
   return (
     <AuthContext.Provider
       value={{
         currentUser,
+        token,
         logout,
         setAuthenticatedUser
       }}

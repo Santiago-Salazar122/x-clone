@@ -1,3 +1,4 @@
+
 import { useParams, Link } from 'react-router-dom'
 import { usePosts } from '../PostContext'
 import { useState, useEffect } from 'react'
@@ -19,16 +20,9 @@ function getSavedProfile(username) {
       return JSON.parse(savedProfile)
     }
 
-    const savedUsers = localStorage.getItem('x-clone-users')
-    const users = savedUsers ? JSON.parse(savedUsers) : []
-
-    const account = users.find(
-      (user) => user.username === username
-    )
-
     return {
       ...defaultProfile,
-      name: account ? account.name : username
+      name: username
     }
   } catch {
     return {
@@ -41,7 +35,7 @@ function getSavedProfile(username) {
 function Profile() {
   const { username } = useParams()
   const { posts } = usePosts()
-  const { currentUser } = useAuth()
+  const { currentUser, token } = useAuth()
 
   const {
     followUser,
@@ -53,12 +47,10 @@ function Profile() {
   const isOwnProfile = currentUser?.username === username
   const following = isFollowing(username)
 
-
   const [name, setName] = useState('')
   const [bio, setBio] = useState('')
   const [isEditing, setIsEditing] = useState(false)
   const [profileError, setProfileError] = useState('')
-
 
   useEffect(() => {
     let isActive = true
@@ -66,9 +58,24 @@ function Profile() {
     async function loadProfile() {
       setProfileError('')
 
+      const savedProfile = getSavedProfile(username)
+
+      setName(savedProfile.name || username)
+      setBio(savedProfile.bio || defaultProfile.bio)
+      setIsEditing(false)
+
+      if (!token) {
+        return
+      }
+
       try {
         const response = await fetch(
-          `http://localhost:8080/api/users/${encodeURIComponent(username)}`
+          `http://localhost:8080/api/users/${encodeURIComponent(username)}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          }
         )
 
         if (!response.ok) {
@@ -79,19 +86,14 @@ function Profile() {
 
         if (!isActive) return
 
-        const savedProfile = getSavedProfile(username)
-
         setName(user.name || username)
-        setBio(savedProfile.bio || defaultProfile.bio)
-      } catch (error) {
+      } catch {
         if (!isActive) return
 
         setProfileError(
           'No se pudo cargar el perfil desde el servidor.'
         )
       }
-
-      setIsEditing(false)
     }
 
     loadProfile()
@@ -99,23 +101,23 @@ function Profile() {
     return () => {
       isActive = false
     }
-  }, [username])
-
+  }, [username, token])
 
   const userPosts = posts.filter(
     (post) => post.username.replace('@', '') === username
   )
 
-
   async function saveProfile() {
+    setProfileError('')
+
     try {
       const response = await fetch(
         `http://localhost:8080/api/users/${encodeURIComponent(username)}`,
         {
           method: 'PUT',
-          credentials: 'include',
           headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
           },
           body: JSON.stringify({ name })
         }
@@ -129,13 +131,17 @@ function Profile() {
         )
       }
 
+      const updatedProfile = {
+        name: data.name || name,
+        bio
+      }
+
       localStorage.setItem(
         `x-clone-profile-${username}`,
-        JSON.stringify({ name: data.name, bio })
+        JSON.stringify(updatedProfile)
       )
 
-      setName(data.name)
-      setProfileError('')
+      setName(updatedProfile.name)
       setIsEditing(false)
     } catch (error) {
       setProfileError(
@@ -144,15 +150,12 @@ function Profile() {
     }
   }
 
-
   return (
     <div className="profile-page">
       <header>
         <h1>Perfil</h1>
 
-        <Link to="/">
-          ← Volver al inicio
-        </Link>
+        <Link to="/">← Volver al inicio</Link>
       </header>
 
       <section className="profile-info">
@@ -163,9 +166,7 @@ function Profile() {
         <h2>{name}</h2>
         <p>@{username}</p>
         <p>{bio}</p>
-        {profileError && (
-          <p role="alert">{profileError}</p>
-        )}
+
         <div className="profile-stats">
           <p>
             <strong>{getFollowingCount(username)}</strong> Seguidos
@@ -206,9 +207,15 @@ function Profile() {
           </div>
         )}
 
+        {profileError && <p role="alert">{profileError}</p>}
+
         {isOwnProfile && (
           isEditing ? (
-            <button type="button" onClick={saveProfile}>
+            <button
+              type="button"
+              onClick={saveProfile}
+              disabled={!token}
+            >
               Guardar perfil
             </button>
           ) : (
@@ -223,7 +230,6 @@ function Profile() {
       </section>
 
       <section className="feed">
-
         <h2>Publicaciones</h2>
 
         {userPosts.length === 0 ? (
