@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useState } from 'react'
 
 const AuthContext = createContext()
@@ -12,71 +13,9 @@ export function AuthProvider({ children }) {
     }
   })
 
-
-  function register(user) {
-    const savedUsers = localStorage.getItem('x-clone-users')
-    const users = savedUsers ? JSON.parse(savedUsers) : []
-
-    const emailExists = users.some(
-      (savedUser) => savedUser.email === user.email
-    )
-
-    if (emailExists) {
-      return {
-        success: false,
-        message: 'Este correo ya está registrado.'
-      }
-    }
-
-    const usernameExists = users.some(
-      (savedUser) => savedUser.username === user.username
-    )
-
-    if (usernameExists) {
-      return {
-        success: false,
-        message: 'Este nombre de usuario ya está ocupado.'
-      }
-    }
-
-    const newUser = {
-      ...user,
-      createdAt: new Date().toISOString()
-    }
-
-    users.push(newUser)
-
-    localStorage.setItem('x-clone-users', JSON.stringify(users))
-    localStorage.setItem('x-clone-current-user', JSON.stringify(newUser))
-
-    setCurrentUser(newUser)
-
-    return { success: true }
-  }
-
-
-  function login(email, password) {
-    const savedUsers = localStorage.getItem('x-clone-users')
-    const users = savedUsers ? JSON.parse(savedUsers) : []
-
-    const user = users.find(
-      (savedUser) =>
-        savedUser.email === email.trim().toLowerCase() &&
-        savedUser.password === password
-    )
-
-    if (!user) {
-      return {
-        success: false,
-        message: 'Correo o contraseña incorrectos.'
-      }
-    }
-
-    setCurrentUser(user)
-    localStorage.setItem('x-clone-current-user', JSON.stringify(user))
-
-    return { success: true }
-  }
+  const [token, setToken] = useState(() => {
+    return localStorage.getItem('x-clone-token') || null
+  })
 
   function setAuthenticatedUser(user) {
     const authenticatedUser = {
@@ -91,20 +30,26 @@ export function AuthProvider({ children }) {
       JSON.stringify(authenticatedUser)
     )
 
+    if (user.token) {
+      localStorage.setItem('x-clone-token', user.token)
+      setToken(user.token)
+    }
+
     setCurrentUser(authenticatedUser)
   }
 
   function logout() {
     localStorage.removeItem('x-clone-current-user')
+    localStorage.removeItem('x-clone-token')
     setCurrentUser(null)
+    setToken(null)
   }
 
   return (
     <AuthContext.Provider
       value={{
         currentUser,
-        register,
-        login,
+        token,
         logout,
         setAuthenticatedUser
       }}

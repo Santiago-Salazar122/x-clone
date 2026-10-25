@@ -1,5 +1,5 @@
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { usePosts } from '../PostContext'
 import { useAuth } from '../AuthContext'
 import { useNavigate } from 'react-router-dom'
@@ -8,7 +8,7 @@ import { useFollows } from '../FollowContext'
 function Home() {
   const [text, setText] = useState('')
   const { posts, setPosts } = usePosts()
-  const { currentUser } = useAuth()
+  const { currentUser, token } = useAuth()
   const { followUser, isFollowing } = useFollows()
   const [searchUsername, setSearchUsername] = useState('')
   const [searchError, setSearchError] = useState('')
@@ -19,23 +19,94 @@ function Home() {
   const profileName = currentUser?.name || 'Santiago'
   const profileHandle = currentUser?.username || 'santi'
 
-  function publishPost() {
-    if (text.trim() === '') {
+  useEffect(() => {
+    if (!token) {
       return
     }
 
-    const newPost = {
-      id: Date.now(),
-      name: profileName,
-      username: `@${profileHandle}`,
-      content: text,
-      likes: 0,
-      liked: false
+    async function loadPosts() {
+      try {
+        const response = await fetch(
+          `${import.meta.env.VITE_API_URL}/api/posts`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          }
+        )
+
+        if (!response.ok) {
+          throw new Error('No se pudieron cargar las publicaciones')
+        }
+
+        const data = await response.json()
+
+        const formattedPosts = data.map((post) => ({
+          id: post.id,
+          name: post.user.name,
+          username: `@${post.user.username}`,
+          content: post.content,
+          likes: 0,
+          liked: false
+        }))
+
+        setPosts(formattedPosts)
+      } catch (error) {
+        console.error('Error loading posts:', error)
+      }
     }
 
-    setPosts([newPost, ...posts])
-    setText('')
+    loadPosts()
+  }, [token, setPosts])
+
+
+  async function publishPost() {
+  
+    const content = text.trim()
+
+    if (!content || !token) {
+      return
+    }
+
+  
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/posts`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({ content })
+        }
+      )
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(
+          data.message || 'No se pudo publicar el mensaje'
+        )
+      }
+
+      const newPost = {
+        id: data.id,
+        name: data.user.name,
+        username: `@${data.user.username}`,
+        content: data.content,
+        likes: 0,
+        liked: false
+      }
+
+      setPosts((currentPosts) => [newPost, ...currentPosts])
+      setText('')
+    } catch (error) {
+      console.error('Error publishing post:', error)
+      alert(error.message || 'No se pudo conectar con el servidor')
+    }
   }
+
 
   function toggleLike(postId) {
     setPosts((currentPosts) =>
