@@ -3,7 +3,6 @@ import { useParams, Link } from 'react-router-dom'
 import { usePosts } from '../PostContext'
 import { useState, useEffect } from 'react'
 import { useAuth } from '../AuthContext'
-import { useFollows } from '../FollowContext'
 
 const defaultProfile = {
   name: '',
@@ -36,16 +35,14 @@ function Profile() {
   const { username } = useParams()
   const { posts } = usePosts()
   const { currentUser, token } = useAuth()
+  const [following, setFollowing] = useState(false)
+  const [followersCount, setFollowersCount] = useState(0)
+  const [followingCount, setFollowingCount] = useState(0)
+  const [followError, setFollowError] = useState('')
 
-  const {
-    followUser,
-    isFollowing,
-    getFollowersCount,
-    getFollowingCount
-  } = useFollows()
 
   const isOwnProfile = currentUser?.username === username
-  const following = isFollowing(username)
+
 
   const [name, setName] = useState('')
   const [bio, setBio] = useState('')
@@ -103,9 +100,102 @@ function Profile() {
     }
   }, [username, token])
 
+  useEffect(() => {
+    if (!token) {
+      setFollowing(false)
+      setFollowersCount(0)
+      setFollowingCount(0)
+      return
+    }
+
+    let isActive = true
+
+    async function loadFollowData() {
+      try {
+        const headers = {
+          Authorization: `Bearer ${token}`
+        }
+
+        const [followersResponse, followingResponse, statusResponse] =
+          await Promise.all([
+            fetch(
+              `http://localhost:8080/api/follows/${encodeURIComponent(username)}/followers/count`,
+              { headers }
+            ),
+            fetch(
+              `http://localhost:8080/api/follows/${encodeURIComponent(username)}/following/count`,
+              { headers }
+            ),
+            fetch(
+              `http://localhost:8080/api/follows/${encodeURIComponent(username)}/is-following`,
+              { headers }
+            )
+          ])
+
+        if (!followersResponse.ok || !followingResponse.ok || !statusResponse.ok) {
+          throw new Error('No se pudieron cargar los datos de seguimiento.')
+        }
+
+        const [followersData, followingData, statusData] = await Promise.all([
+          followersResponse.json(),
+          followingResponse.json(),
+          statusResponse.json()
+        ])
+
+        if (!isActive) return
+
+        setFollowersCount(followersData.count)
+        setFollowingCount(followingData.count)
+        setFollowing(statusData.isFollowing)
+      } catch (error) {
+        if (!isActive) return
+        setFollowError(error.message)
+      }
+    }
+
+    loadFollowData()
+
+    return () => {
+      isActive = false
+    }
+  }, [username, token])
+
   const userPosts = posts.filter(
     (post) => post.username.replace('@', '') === username
   )
+
+  async function handleFollow() {
+    setFollowError('')
+
+    if (!token) {
+      setFollowError('Debes iniciar sesión para seguir usuarios.')
+      return
+    }
+
+    try {
+      const response = await fetch(
+        `http://localhost:8080/api/follows/${encodeURIComponent(username)}`,
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      )
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.message || 'No se pudo seguir al usuario.')
+      }
+
+      setFollowing(true)
+      setFollowersCount((count) => count + 1)
+    } catch (error) {
+      setFollowError(error.message || 'No se pudo conectar con el servidor.')
+    }
+  }
+
 
   async function saveProfile() {
     setProfileError('')
@@ -169,18 +259,18 @@ function Profile() {
 
         <div className="profile-stats">
           <p>
-            <strong>{getFollowingCount(username)}</strong> Seguidos
+            <strong>{followingCount}</strong> Seguidos
           </p>
 
           <p>
-            <strong>{getFollowersCount(username)}</strong> Seguidores
+            <strong>{followersCount}</strong> Seguidores
           </p>
         </div>
 
         {!isOwnProfile && (
           <button
             type="button"
-            onClick={() => followUser(username)}
+            onClick={handleFollow}
             disabled={following}
           >
             {following ? 'Siguiendo' : 'Seguir'}
@@ -208,6 +298,7 @@ function Profile() {
         )}
 
         {profileError && <p role="alert">{profileError}</p>}
+        {followError && <p role="alert">{followError}</p>}
 
         {isOwnProfile && (
           isEditing ? (
