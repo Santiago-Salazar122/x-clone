@@ -61,14 +61,14 @@ function Home() {
 
 
   async function publishPost() {
-  
+
     const content = text.trim()
 
     if (!content || !token) {
       return
     }
 
-  
+
     try {
       const response = await fetch(
         `${import.meta.env.VITE_API_URL}/api/posts`,
@@ -124,7 +124,7 @@ function Home() {
     )
   }
 
-  function openProfile() {
+  async function openProfile() {
     const username = searchUsername.trim().replace(/^@/, '')
 
     if (!username) {
@@ -132,20 +132,31 @@ function Home() {
       return
     }
 
-    const savedUsers = localStorage.getItem('x-clone-users')
-    const users = savedUsers ? JSON.parse(savedUsers) : []
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/users/${encodeURIComponent(username)}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      )
 
-    const userExists = users.some(
-      (user) => user.username === username
-    )
+      if (response.status === 404) {
+        setSearchError('No se encontró ese usuario.')
+        return
+      }
 
-    if (!userExists) {
-      setSearchError('No se encontró ese usuario.')
-      return
+      if (!response.ok) {
+        throw new Error('No se pudo consultar el usuario.')
+      }
+
+      setSearchError('')
+      navigate(`/users/${encodeURIComponent(username)}`)
+    } catch (error) {
+      console.error('Error searching profile:', error)
+      setSearchError('No se pudo conectar con el servidor.')
     }
-
-    setSearchError('')
-    navigate(`/users/${username}`)
   }
 
 
