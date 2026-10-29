@@ -1,4 +1,8 @@
 
+/* ==============================
+   1. Global styles
+================================ */
+
 :root {
   font-family: Arial, Helvetica, sans-serif;
   color: #e7e9ea;
@@ -20,6 +24,12 @@
   box-sizing: border-box;
 }
 
+html {
+  min-width: 320px;
+  min-height: 100%;
+  background: var(--background);
+}
+
 body {
   margin: 0;
   min-width: 320px;
@@ -39,101 +49,254 @@ a {
   -webkit-tap-highlight-color: transparent;
 }
 
+button {
+  cursor: pointer;
+}
+
 a {
   color: var(--accent);
   text-decoration: none;
 }
 
 a:hover {
-  text-decoration: underline;
-}
-
-button {
-  cursor: pointer;
+  text-decoration: none;
 }
 
 #root {
   width: 100%;
-  max-width: 600px;
   min-height: 100vh;
-  margin: 0 auto;
-  border-left: 1px solid var(--border);
-  border-right: 1px solid var(--border);
+  margin: 0;
   background: var(--background);
 }
 
-/* Menú de navegación */
+/* ==============================
+   2. Main three-column layout
+================================ */
 
-nav {
-  position: sticky;
+.app-layout {
+  display: grid;
+  grid-template-columns: 250px 600px 320px;
+  column-gap: 24px;
+  align-items: stretch;
+  justify-content: center;
+  min-height: 100vh;
+}
+
+.app-navbar {
+  grid-column: 1;
+  grid-row: 1;
+  min-width: 0;
+}
+
+.app-content {
+  grid-column: 2;
+  grid-row: 1;
+  width: 100%;
+  min-width: 0;
+  min-height: 100vh;
+  border-left: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+}
+
+.app-sidebar {
+  grid-column: 3;
+  grid-row: 1;
+  width: 320px;
+  min-width: 0;
+  min-height: 100vh;
+  padding: 20px 0;
+}
+
+/* ==============================
+   3. Left navigation
+================================ */
+
+.navbar {
+  position: fixed;
   top: 0;
-  z-index: 10;
+  left: 0;
+  z-index: 100;
+
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+
+  width: 250px;
+  height: 100vh;
+  min-height: 100vh;
+  padding: 20px 16px;
+
+  overflow-y: auto;
+  background: #000000;
+  border-right: 1px solid var(--border);
+}
+
+.navbar-logo {
   display: flex;
   align-items: center;
-  justify-content: space-around;
-  gap: 12px;
-  padding: 16px 12px;
-  background: rgba(0, 0, 0, 0.92);
-  border-bottom: 1px solid var(--border);
-  backdrop-filter: blur(12px);
-}
+  justify-content: center;
 
-nav a {
+  width: 48px;
+  height: 48px;
+  margin-bottom: 12px;
+
+  border-radius: 50%;
   color: #e7e9ea;
-  font-size: 15px;
-  font-weight: 700;
-}
-
-nav a:hover {
-  color: var(--accent);
+  font-size: 36px;
+  font-weight: bold;
   text-decoration: none;
 }
 
-nav button {
-  padding: 9px 14px;
-  border: 1px solid #536471;
-  border-radius: 22px;
-  background: transparent;
-  color: #e7e9ea;
-  font-size: 13px;
-  font-weight: 700;
-}
-
-nav button:hover {
+.navbar-logo:hover {
   background: #181818;
 }
 
-/* Inicio */
+.navbar-link {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+
+  width: 100%;
+  min-height: 48px;
+  padding: 12px;
+
+  border: none;
+  border-radius: 28px;
+  background: transparent;
+  color: #e7e9ea;
+
+  font-size: 18px;
+  font-weight: 700;
+  text-align: left;
+  text-decoration: none;
+
+  transition: background 0.2s ease;
+}
+
+.navbar-link:hover {
+  background: #181818;
+}
+
+.navbar-user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  width: 100%;
+  margin-top: auto;
+  padding: 12px 8px;
+
+  color: #e7e9ea;
+  overflow-wrap: anywhere;
+}
+
+.navbar-user span {
+  font-size: 14px;
+}
+
+.navbar-logout {
+  flex-shrink: 0;
+  margin-top: 8px;
+  font-family: inherit;
+  text-align: left;
+}
+
+/* ==============================
+   4. Home and profile headers
+================================ */
 
 .home-page,
 .profile-page {
   width: 100%;
+  min-width: 0;
   text-align: left;
 }
 
-.home-page header,
+.home-page > header,
 .profile-page > header {
-  padding: 18px 16px;
+  padding: 16px;
   border-bottom: 1px solid var(--border);
 }
 
 .home-page h1,
 .profile-page > header h1 {
   margin: 0;
-  font-size: 21px;
+  font-size: 20px;
   font-weight: 800;
 }
 
-.home-page header p {
-  margin: 10px 0 0;
+.home-page > header p {
+  margin: 8px 0 0;
   color: var(--text-secondary);
-  font-size: 14px;
+  font-size: 13px;
 }
 
-/* Crear publicación */
+/* ==============================
+   5. Follow users section
+================================ */
+
+.follow-user {
+  padding: 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.follow-user h2 {
+  margin: 0 0 12px;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.follow-user form {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+}
+
+.follow-user input {
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+  min-height: 42px;
+  padding: 10px 14px;
+
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  background: transparent;
+  color: #e7e9ea;
+}
+
+.follow-user form button {
+  flex-shrink: 0;
+  min-height: 40px;
+  padding: 9px 16px;
+
+  border: none;
+  border-radius: 22px;
+  background: #eff3f4;
+  color: #0f1419;
+  font-weight: 700;
+}
+
+.follow-user form button:hover {
+  background: #d7dbdc;
+}
+
+.follow-user > p {
+  margin: 10px 0 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+/* ==============================
+   6. Create post
+================================ */
 
 .post-box {
-  padding: 18px 16px;
+  padding: 16px;
   border-bottom: 1px solid var(--border);
 }
 
@@ -146,15 +309,19 @@ nav button:hover {
 .post-box textarea {
   display: block;
   width: 100%;
+  min-width: 0;
   min-height: 100px;
-  padding: 14px 0;
+  padding: 12px 0;
+
   resize: vertical;
   border: none;
+  border-radius: 0;
   outline: none;
-  font-size: 18px;
-  line-height: 1.5;
+
   background: transparent;
   color: #e7e9ea;
+  font-size: 18px;
+  line-height: 1.5;
 }
 
 .post-box textarea::placeholder {
@@ -165,34 +332,60 @@ nav button:hover {
   outline: none;
 }
 
-.post-box button {
+.post-box > p {
+  margin: 8px 0;
+  color: var(--text-secondary);
+  font-size: 12px;
+  text-align: right;
+}
+
+.post-box > button {
   display: block;
+  min-height: 40px;
   margin: 10px 0 0 auto;
   padding: 10px 20px;
+
   border: none;
   border-radius: 24px;
   background: var(--accent);
   color: #ffffff;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 700;
+
   transition: background 0.2s ease;
 }
 
-.post-box button:hover {
+.post-box > button:hover:not(:disabled) {
   background: var(--accent-hover);
 }
 
-/* Publicaciones */
+.post-box > button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+/* ==============================
+   7. Posts feed
+================================ */
+
+.feed {
+  width: 100%;
+  min-width: 0;
+}
 
 .feed > h2 {
-  padding: 0 16px;
+  margin: 0;
+  padding: 16px;
+  border-bottom: 1px solid var(--border);
   font-size: 19px;
 }
 
 .post {
+  min-width: 0;
   padding: 16px;
   border-bottom: 1px solid var(--border);
   overflow-wrap: anywhere;
+
   transition: background 0.2s ease;
 }
 
@@ -218,17 +411,19 @@ nav button:hover {
 }
 
 .post button {
-  align-self: flex-start;
   display: inline-flex;
   align-items: center;
   gap: 6px;
+
   margin-top: 8px;
   padding: 8px 12px;
+
   border: none;
   border-radius: 22px;
   background: transparent;
   color: var(--text-secondary);
   font-size: 14px;
+
   transition: background 0.2s ease, color 0.2s ease;
 }
 
@@ -237,7 +432,9 @@ nav button:hover {
   color: #f91880;
 }
 
-/* Perfil */
+/* ==============================
+   8. Profile information
+================================ */
 
 .profile-info {
   padding: 20px 16px;
@@ -248,9 +445,11 @@ nav button:hover {
   display: flex;
   align-items: center;
   justify-content: center;
+
   width: 76px;
   height: 76px;
   margin-bottom: 14px;
+
   border: 3px solid var(--background);
   border-radius: 50%;
   background: var(--accent);
@@ -282,6 +481,7 @@ nav button:hover {
 .profile-info button {
   margin-top: 14px;
   padding: 9px 17px;
+
   border: 1px solid #536471;
   border-radius: 22px;
   background: transparent;
@@ -293,13 +493,15 @@ nav button:hover {
   background: #181818;
 }
 
-/* Formulario de edición del perfil */
+/* ==============================
+   9. Edit profile form
+================================ */
 
 .edit-profile-form {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  margin-top: 18px;
+  margin: 18px 16px 0;
 }
 
 .edit-profile-form label {
@@ -308,11 +510,11 @@ nav button:hover {
 }
 
 .edit-profile-form input,
-.edit-profile-form textarea,
-input,
-form textarea {
+.edit-profile-form textarea {
   width: 100%;
+  min-width: 0;
   padding: 12px;
+
   border: 1px solid var(--border);
   border-radius: 8px;
   background: var(--background);
@@ -321,32 +523,247 @@ form textarea {
 }
 
 .edit-profile-form input:focus,
-.edit-profile-form textarea:focus,
-input:focus,
-form textarea:focus {
+.edit-profile-form textarea:focus {
   border-color: var(--accent);
 }
 
-/* Inicio de sesión y registro */
+/* ==============================
+   10. Profile search sidebar
+================================ */
 
-#root > div:has(form) {
-  padding: 24px 20px;
+.profile-search {
+  width: 100%;
+  padding: 16px;
+
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--background);
 }
 
-form {
+.profile-search h2 {
+  margin: 0 0 12px;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.profile-search form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+}
+
+.profile-search-input {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px;
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  background: var(--background);
+}
+
+.profile-search input {
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  padding: 12px 0;
+
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  color: #e7e9ea;
+}
+
+.profile-search input:focus {
+  border: none;
+  outline: none;
+  box-shadow: none;
+}
+
+.profile-search > p {
+  margin: 10px 0 0;
+  color: #f4212e;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+/* ==============================
+   11. Login and registration forms
+================================ */
+
+/* These styles target form controls without
+   adding padding to the whole application layout. */
+
+form input,
+form textarea {
+  max-width: 100%;
+}
+
+form input:focus,
+form textarea:focus {
+  border-color: var(--accent);
+  outline: none;
+}
+
+/* ==============================
+   12. Responsive layout
+================================ */
+
+@media (max-width: 1250px) {
+  .app-layout {
+    grid-template-columns: 250px minmax(0, 600px);
+    column-gap: 24px;
+  }
+
+  .app-sidebar {
+    display: none;
+  }
+}
+
+@media (max-width: 900px) {
+  .app-layout {
+    grid-template-columns: 80px minmax(0, 600px);
+    column-gap: 12px;
+  }
+
+  .navbar {
+    width: 80px;
+    align-items: center;
+    padding: 16px 8px;
+  }
+
+  .navbar-link {
+    justify-content: center;
+    padding: 12px 8px;
+  }
+
+  .navbar-link span,
+  .navbar-user span {
+    display: none;
+  }
+
+  .navbar-user {
+    justify-content: center;
+    padding: 12px 0;
+  }
+
+  .app-content {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .app-layout {
+    display: block;
+    padding-left: 64px;
+  }
+
+  .navbar {
+    width: 64px;
+    padding: 12px 6px;
+  }
+
+  .navbar-logo {
+    width: 42px;
+    height: 42px;
+    font-size: 30px;
+  }
+
+  .navbar-link {
+    gap: 0;
+    min-height: 44px;
+    padding: 10px 6px;
+  }
+
+  .app-content {
+    width: 100%;
+    border-left: none;
+    border-right: none;
+  }
+
+  .home-page > header,
+  .profile-page > header,
+  .follow-user,
+  .post-box,
+  .post,
+  .profile-info {
+    padding: 14px 12px;
+  }
+
+  .post-box textarea {
+    font-size: 16px;
+  }
+
+  .follow-user form {
+    flex-wrap: wrap;
+  }
+
+  .follow-user form button {
+    flex-shrink: 0;
+  }
+}
+
+
+/* Login and registration layout */
+
+.app-layout:has(.auth-page) {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 24px;
+}
+
+.app-layout:has(.auth-page) .app-navbar,
+.app-layout:has(.auth-page) .app-sidebar {
+  display: none;
+}
+
+.app-layout:has(.auth-page) .app-content {
+  width: 100%;
+  max-width: 420px;
+  min-height: auto;
+  padding: 32px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+}
+
+.auth-page {
+  width: 100%;
+}
+
+.auth-page h1 {
+  margin: 0 0 24px;
+  font-size: 28px;
+  font-weight: 800;
+}
+
+.auth-page form {
   display: flex;
   flex-direction: column;
   gap: 14px;
-  margin-top: 20px;
+  margin: 0;
 }
 
-form input {
+.auth-page form input {
+  width: 100%;
   min-height: 48px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--background);
+  color: #e7e9ea;
 }
 
-form button {
+.auth-page form input:focus {
+  border-color: var(--accent);
+  outline: none;
+}
+
+.auth-page form button {
   min-height: 44px;
-  padding: 11px 18px;
   border: none;
   border-radius: 24px;
   background: #eff3f4;
@@ -354,118 +771,73 @@ form button {
   font-weight: 700;
 }
 
-form button:hover {
-  background: #d7dbdc;
+.auth-page > p {
+  margin-top: 20px;
+  line-height: 1.5;
 }
 
-form p {
-  margin: 0;
+.auth-page form p {
   color: #f4212e;
   font-size: 14px;
 }
 
-/* Pantallas pequeñas */
-
 @media (max-width: 480px) {
-  #root {
-    border-left: none;
-    border-right: none;
+  .app-layout:has(.auth-page) {
+    padding: 16px;
   }
 
-  nav {
-    gap: 8px;
-    padding: 14px 8px;
-  }
-
-  nav a {
-    font-size: 13px;
-  }
-
-  nav button {
-    padding: 8px 10px;
-    font-size: 12px;
-  }
-
-  .post-box,
-  .post,
-  .profile-info {
-    padding: 15px 13px;
+  .app-layout:has(.auth-page) .app-content {
+    padding: 24px 20px;
   }
 }
 
 
-/* Navegación vertical estilo X */
-.navbar {
+.profile-search {
+  position: relative;
+}
+
+.profile-search-results {
+  position: absolute;
+  top: calc(100% - 16px);
+  left: 16px;
+  right: 16px;
+  z-index: 10;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--background);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+}
+
+.profile-search-suggestion {
+  display: flex;
+  width: 100%;
+  padding: 12px 14px;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.profile-search-suggestion:hover {
+  background: rgba(128, 128, 128, 0.15);
+}
+
+.profile-search-suggestion > div {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: 8px;
-  width: 250px;
-  min-height: 100vh;
-  padding: 20px 16px;
-  background: #000000;
-  border-right: 1px solid var(--border);
-  position: fixed;
-  top: 0;
-  left: 0;
-  z-index: 100;
+  gap: 4px;
+  min-width: 0;
 }
 
-.navbar-logo {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 48px;
-  height: 48px;
-  margin-bottom: 12px;
-  color: #e7e9ea;
-  font-size: 36px;
-  font-weight: bold;
-  text-decoration: none;
-  border-radius: 50%;
-}
-
-.navbar-logo:hover {
-  background: #181818;
-}
-
-.navbar-link {
-  display: flex;
-  align-items: center;
-  gap: 18px;
-  width: 100%;
-  padding: 12px;
-  border: none;
-  border-radius: 28px;
-  background: transparent;
-  color: #e7e9ea;
-  font-size: 18px;
-  text-decoration: none;
-  cursor: pointer;
-  transition: background 0.2s ease;
-}
-
-.navbar-link:hover {
-  background: #181818;
-}
-
-.navbar-user {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-  margin-top: auto;
-  padding: 12px 8px;
-  color: #e7e9ea;
-  overflow-wrap: anywhere;
-}
-
-.navbar-user span {
+.profile-search-suggestion strong {
   font-size: 14px;
+  font-weight: 700;
 }
 
-.navbar-logout {
-  margin-top: 8px;
-  font-family: inherit;
-  text-align: left;
+.profile-search-suggestion span {
+  color: #71767b;
+  font-size: 13px;
 }
