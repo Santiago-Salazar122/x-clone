@@ -112,9 +112,7 @@ a:hover {
 ================================ */
 
 .navbar {
-  position: fixed;
-  top: 0;
-  left: 0;
+  position: relative;
   z-index: 100;
 
   display: flex;
@@ -129,7 +127,7 @@ a:hover {
 
   overflow-y: auto;
   background: #000000;
-  border-right: 1px solid var(--border);
+  border-left: 1px solid var(--border);
 }
 
 .navbar-logo {
@@ -310,7 +308,7 @@ a:hover {
   display: block;
   width: 100%;
   min-width: 0;
-  min-height: 100px;
+  min-height: 55px;
   padding: 12px 0;
 
   resize: vertical;
@@ -840,4 +838,90 @@ form textarea:focus {
 .profile-search-suggestion span {
   color: #71767b;
   font-size: 13px;
+}
+
+/* Follow list modal */
+.follow-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: rgba(91, 112, 131, 0.4);
+}
+
+.follow-modal-content {
+  width: 100%;
+  max-width: 500px;
+  max-height: 80vh;
+  overflow-y: auto;
+  background: var(--background);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.follow-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.follow-modal-header h2 {
+  margin: 0;
+  font-size: 20px;
+}
+
+.follow-modal-header button {
+  border: none;
+  background: transparent;
+  font-size: 22px;
+  cursor: pointer;
+  color: inherit;
+}
+
+.follow-user {
+  padding: 14px 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.follow-user a {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.follow-user a:hover {
+  text-decoration: underline;
+}
+
+.follow-user span {
+  color: #71767b;
+  font-size: 14px;
+}
+
+.follow-pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 20px;
+}
+
+.follow-pagination button {
+  padding: 9px 16px;
+  border: none;
+  border-radius: 20px;
+  background: #1d9bf0;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.follow-pagination button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }

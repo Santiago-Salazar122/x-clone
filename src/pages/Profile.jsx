@@ -39,6 +39,10 @@ function Profile() {
   const [followersCount, setFollowersCount] = useState(0)
   const [followingCount, setFollowingCount] = useState(0)
   const [followError, setFollowError] = useState('')
+  const [showFollowList, setShowFollowList] = useState(false)
+  const [followListType, setFollowListType] = useState('followers')
+  const [followList, setFollowList] = useState([])
+  const [followListPage, setFollowListPage] = useState(0)
 
 
   const isOwnProfile = currentUser?.username === username
@@ -160,6 +164,35 @@ function Profile() {
     }
   }, [username, token])
 
+
+  async function loadFollowList(type, page = 0) {
+    if (!token) return
+
+    try {
+      const response = await fetch(
+        `http://localhost:8080/api/follows/${encodeURIComponent(username)}/${type}?page=${page}&size=10`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      )
+
+      if (!response.ok) {
+        throw new Error('No se pudo cargar la lista.')
+      }
+
+      const data = await response.json()
+
+      setFollowList(data.content)
+      setFollowListPage(data.number)
+      setFollowListType(type)
+      setShowFollowList(true)
+    } catch (error) {
+      setFollowError(error.message)
+    }
+  }
+
   const userPosts = posts.filter(
     (post) => post.username.replace('@', '') === username
   )
@@ -258,11 +291,19 @@ function Profile() {
         <p>{bio}</p>
 
         <div className="profile-stats">
-          <p>
+          <p
+            onClick={() => loadFollowList('following')}
+            role="button"
+            tabIndex={0}
+          >
             <strong>{followingCount}</strong> Seguidos
           </p>
 
-          <p>
+          <p
+            onClick={() => loadFollowList('followers')}
+            role="button"
+            tabIndex={0}
+          >
             <strong>{followersCount}</strong> Seguidores
           </p>
         </div>
@@ -319,6 +360,58 @@ function Profile() {
           )
         )}
       </section>
+    
+      {showFollowList && (
+        <div className="follow-modal">
+          <div className="follow-modal-content">
+            <div className="follow-modal-header">
+              <h2>
+                {followListType === 'followers' ? 'Seguidores' : 'Seguidos'}
+              </h2>
+
+              <button
+                type="button"
+                onClick={() => setShowFollowList(false)}
+              >
+                ✕
+              </button>
+            </div>
+
+            {followList.length === 0 ? (
+              <p>No hay usuarios para mostrar.</p>
+            ) : (
+              followList.map((user) => (
+                <div className="follow-user" key={user.id}>
+                  <Link to={`/users/${user.username}`}>
+                    <strong>{user.name}</strong>
+                    <span>@{user.username}</span>
+                  </Link>
+                </div>
+              ))
+            )}
+
+            <div className="follow-pagination">
+              <button
+                type="button"
+                onClick={() => loadFollowList(followListType, followListPage - 1)}
+                disabled={followListPage === 0}
+              >
+                Anterior
+              </button>
+
+              <span>Página {followListPage + 1}</span>
+
+              <button
+                type="button"
+                onClick={() => loadFollowList(followListType, followListPage + 1)}
+                disabled={followList.length < 10}
+              >
+                Siguiente
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <section className="feed">
         <h2>Publicaciones</h2>
