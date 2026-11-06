@@ -1,6 +1,7 @@
 
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { apiRequest } from '../services/api'
 
 function Register() {
   const navigate = useNavigate()
@@ -32,11 +33,8 @@ function Register() {
 
 
     try {
-      const response = await fetch('http://localhost:8080/api/users/register', {
+      await apiRequest('/api/users/register', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
         body: JSON.stringify({
           name: name.trim(),
           username: username.trim().toLowerCase(),
@@ -44,13 +42,6 @@ function Register() {
           password
         })
       })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        setError(data.message || 'No se pudo registrar la cuenta.')
-        return
-      }
 
       navigate('/login')
 

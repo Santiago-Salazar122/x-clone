@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { useAuth } from '../AuthContext'
 import { useNavigate } from 'react-router-dom'
+import { apiRequest } from '../services/api'
 
 function Login() {
   const { setAuthenticatedUser } = useAuth()
@@ -18,36 +19,26 @@ function Login() {
     setLoading(true)
 
     try {
-      const response = await fetch('http://localhost:8080/api/users/login', {
+      const data = await apiRequest('/api/users/login', {
         method: 'POST',
         credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json'
-        },
         body: JSON.stringify({
           email: email.trim().toLowerCase(),
           password
         })
       })
 
-      const data = await response.json()
-
-      if (!response.ok) {
-        setError(data.message || 'No se pudo iniciar sesión.')
-        return
-      }
-
       setAuthenticatedUser(data)
       navigate('/')
-    } catch {
-      setError('No se pudo conectar con el servidor.')
+    } catch (error) {
+      setError(error.message || 'No se pudo conectar con el servidor.')
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <div>
+    <div className="auth-page">
       <h1>Iniciar sesión</h1>
 
       <form onSubmit={handleLogin}>

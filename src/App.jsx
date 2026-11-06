@@ -10,19 +10,15 @@ import Home from './pages/Home'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import Profile from './pages/Profile'
-import { PostProvider } from './PostContext'
 import { AuthProvider } from './AuthContext'
 import ProtectedRoute from './components/ProtectedRoute'
 import Navbar from './components/Navbar'
-import { FollowProvider } from './FollowContext'
 import ProfileSearch from './components/ProfileSearch'
 
 
 function App() {
   return (
     <AuthProvider>
-      <FollowProvider>
-        <PostProvider>
           <BrowserRouter>
 
             <div className="app-layout">
@@ -62,8 +58,6 @@ function App() {
               </aside>
             </div>
           </BrowserRouter>
-        </PostProvider>
-      </FollowProvider>
     </AuthProvider>
   )
 }

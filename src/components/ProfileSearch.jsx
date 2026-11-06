@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { Search } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../AuthContext'
+import { apiRequest } from '../services/api'
 
 function ProfileSearch() {
     const [searchUsername, setSearchUsername] = useState('')
@@ -23,20 +24,10 @@ function ProfileSearch() {
 
         const timeoutId = setTimeout(async () => {
             try {
-                const response = await fetch(
-                    `${import.meta.env.VITE_API_URL}/api/users/search?query=${encodeURIComponent(query)}`,
-                    {
-                        headers: {
-                            Authorization: `Bearer ${token}`
-                        }
-                    }
+                const users = await apiRequest(
+                    `/api/users/search?query=${encodeURIComponent(query)}`
                 )
 
-                if (!response.ok) {
-                    throw new Error('No se pudieron consultar los usuarios.')
-                }
-
-                const users = await response.json()
                 setSuggestions(users)
                 setShowSuggestions(true)
             } catch (error) {
@@ -52,36 +43,26 @@ function ProfileSearch() {
     async function openProfile() {
         const username = searchUsername.trim().replace(/^@/, '')
 
-
         if (!username) {
             setSearchError('Escribe un nombre de usuario.')
             return
         }
 
         try {
-            const response = await fetch(
-                `${import.meta.env.VITE_API_URL}/api/users/${encodeURIComponent(username)}`,
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
-                }
+            await apiRequest(
+                `/api/users/${encodeURIComponent(username)}`
             )
-
-
-            if (response.status === 404) {
-                setSearchError('No se encontró ese usuario.')
-                return
-            }
-
-            if (!response.ok) {
-                throw new Error('No se pudo consultar el usuario.')
-            }
 
             setSearchError('')
             navigate(`/users/${encodeURIComponent(username)}`)
         } catch (error) {
             console.error('Error searching profile:', error)
+
+            if (error.status === 404) {
+                setSearchError('No se encontró ese usuario.')
+                return
+            }
+
             setSearchError('No se pudo conectar con el servidor.')
         }
     }

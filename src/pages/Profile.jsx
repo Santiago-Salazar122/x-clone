@@ -1,8 +1,8 @@
 
 import { useParams, Link } from 'react-router-dom'
-import { usePosts } from '../PostContext'
 import { useState, useEffect } from 'react'
 import { useAuth } from '../AuthContext'
+import { apiRequest } from '../services/api'
 
 const defaultProfile = {
   name: '',
@@ -33,7 +33,9 @@ function getSavedProfile(username) {
 
 function Profile() {
   const { username } = useParams()
-  const { posts } = usePosts()
+  const [userPosts, setUserPosts] = useState([])
+  const [postsLoading, setPostsLoading] = useState(true)
+  const [postsError, setPostsError] = useState('')
   const { currentUser, token } = useAuth()
   const [following, setFollowing] = useState(false)
   const [followersCount, setFollowersCount] = useState(0)
@@ -70,20 +72,9 @@ function Profile() {
       }
 
       try {
-        const response = await fetch(
-          `http://localhost:8080/api/users/${encodeURIComponent(username)}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`
-            }
-          }
+        const user = await apiRequest(
+          `/api/users/${encodeURIComponent(username)}`
         )
-
-        if (!response.ok) {
-          throw new Error('No se pudo encontrar el usuario.')
-        }
-
-        const user = await response.json()
 
         if (!isActive) return
 
@@ -105,6 +96,45 @@ function Profile() {
   }, [username, token])
 
   useEffect(() => {
+    let isActive = true
+
+    const loadUserPosts = async () => {
+      setPostsLoading(true)
+      setPostsError('')
+      if (!token) {
+        setUserPosts([])
+        setPostsLoading(false)
+        return
+      }
+
+      try {
+        const data = await apiRequest(
+          `/api/posts/user/${encodeURIComponent(username)}`
+        )
+
+        if (isActive) {
+          setUserPosts(data)
+        }
+      } catch (error) {
+        if (isActive) {
+          setPostsError(error.message)
+        }
+      } finally {
+        if (isActive) {
+          setPostsLoading(false)
+        }
+      }
+    }
+
+    loadUserPosts()
+
+    return () => {
+      isActive = false
+    }
+  }, [username, token])
+
+
+  useEffect(() => {
     if (!token) {
       setFollowing(false)
       setFollowersCount(0)
@@ -116,35 +146,18 @@ function Profile() {
 
     async function loadFollowData() {
       try {
-        const headers = {
-          Authorization: `Bearer ${token}`
-        }
-
-        const [followersResponse, followingResponse, statusResponse] =
+        const [followersData, followingData, statusData] =
           await Promise.all([
-            fetch(
-              `http://localhost:8080/api/follows/${encodeURIComponent(username)}/followers/count`,
-              { headers }
+            apiRequest(
+              `/api/follows/${encodeURIComponent(username)}/followers/count`
             ),
-            fetch(
-              `http://localhost:8080/api/follows/${encodeURIComponent(username)}/following/count`,
-              { headers }
+            apiRequest(
+              `/api/follows/${encodeURIComponent(username)}/following/count`
             ),
-            fetch(
-              `http://localhost:8080/api/follows/${encodeURIComponent(username)}/is-following`,
-              { headers }
+            apiRequest(
+              `/api/follows/${encodeURIComponent(username)}/is-following`
             )
           ])
-
-        if (!followersResponse.ok || !followingResponse.ok || !statusResponse.ok) {
-          throw new Error('No se pudieron cargar los datos de seguimiento.')
-        }
-
-        const [followersData, followingData, statusData] = await Promise.all([
-          followersResponse.json(),
-          followingResponse.json(),
-          statusResponse.json()
-        ])
 
         if (!isActive) return
 
@@ -169,20 +182,9 @@ function Profile() {
     if (!token) return
 
     try {
-      const response = await fetch(
-        `http://localhost:8080/api/follows/${encodeURIComponent(username)}/${type}?page=${page}&size=10`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        }
+      const data = await apiRequest(
+        `/api/follows/${encodeURIComponent(username)}/${type}?page=${page}&size=10`
       )
-
-      if (!response.ok) {
-        throw new Error('No se pudo cargar la lista.')
-      }
-
-      const data = await response.json()
 
       setFollowList(data.content)
       setFollowListPage(data.number)
@@ -193,9 +195,7 @@ function Profile() {
     }
   }
 
-  const userPosts = posts.filter(
-    (post) => post.username.replace('@', '') === username
-  )
+
 
   async function handleFollow() {
     setFollowError('')
@@ -206,21 +206,12 @@ function Profile() {
     }
 
     try {
-      const response = await fetch(
-        `http://localhost:8080/api/follows/${encodeURIComponent(username)}`,
+      await apiRequest(
+        `/api/follows/${encodeURIComponent(username)}`,
         {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
+          method: 'POST'
         }
       )
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.message || 'No se pudo seguir al usuario.')
-      }
 
       setFollowing(true)
       setFollowersCount((count) => count + 1)
@@ -234,25 +225,13 @@ function Profile() {
     setProfileError('')
 
     try {
-      const response = await fetch(
-        `http://localhost:8080/api/users/${encodeURIComponent(username)}`,
+      const data = await apiRequest(
+        `/api/users/${encodeURIComponent(username)}`,
         {
           method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`
-          },
           body: JSON.stringify({ name })
         }
       )
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(
-          data.message || 'No se pudo actualizar el nombre.'
-        )
-      }
 
       const updatedProfile = {
         name: data.name || name,
@@ -360,7 +339,7 @@ function Profile() {
           )
         )}
       </section>
-    
+
       {showFollowList && (
         <div className="follow-modal">
           <div className="follow-modal-content">
@@ -416,15 +395,19 @@ function Profile() {
       <section className="feed">
         <h2>Publicaciones</h2>
 
-        {userPosts.length === 0 ? (
+        {postsLoading ? (
+          <p>Cargando publicaciones...</p>
+        ) : postsError ? (
+          <p>{postsError}</p>
+        ) : userPosts.length === 0 ? (
           <p>Este usuario todavía no tiene publicaciones.</p>
         ) : (
           userPosts.map((post) => (
             <article className="post" key={post.id}>
-              <h3>{post.name}</h3>
-              <p>{post.username}</p>
+              <h3>{post.user.name}</h3>
+              <p>@{post.user.username}</p>
               <p>{post.content}</p>
-              <p>♥ {post.likes} Me gusta</p>
+              <p>{new Date(post.createdAt).toLocaleString()}</p>
             </article>
           ))
         )}

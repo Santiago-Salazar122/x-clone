@@ -1,5 +1,6 @@
 
-import { createContext, useContext, useState } from 'react'
+import { createContext, useContext, useState, useEffect } from 'react'
+import { apiRequest } from './services/api'
 
 const AuthContext = createContext()
 
@@ -16,6 +17,8 @@ export function AuthProvider({ children }) {
   const [token, setToken] = useState(() => {
     return localStorage.getItem('x-clone-token') || null
   })
+
+  const [loading, setLoading] = useState(true)
 
   function setAuthenticatedUser(user) {
     const authenticatedUser = {
@@ -45,11 +48,47 @@ export function AuthProvider({ children }) {
     setToken(null)
   }
 
+  useEffect(() => {
+    function handleUnauthorized() {
+      logout()
+    }
+
+    window.addEventListener('x-clone-unauthorized', handleUnauthorized)
+
+    return () => {
+      window.removeEventListener('x-clone-unauthorized', handleUnauthorized)
+    }
+  }, [])
+
+  useEffect(() => {
+    async function validateSession() {
+      const savedToken = localStorage.getItem('x-clone-token')
+
+      if (!savedToken) {
+        setLoading(false)
+        return
+      }
+
+      try {
+        const user = await apiRequest('/api/users/me')
+
+        setAuthenticatedUser(user)
+      } catch {
+        logout()
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    validateSession()
+  }, [])
+
   return (
     <AuthContext.Provider
       value={{
         currentUser,
         token,
+        loading,
         logout,
         setAuthenticatedUser
       }}
@@ -60,5 +99,11 @@ export function AuthProvider({ children }) {
 }
 
 export function useAuth() {
-  return useContext(AuthContext)
+  const context = useContext(AuthContext)
+
+  if (!context) {
+    throw new Error('useAuth debe utilizarse dentro de AuthProvider')
+  }
+
+  return context
 }
