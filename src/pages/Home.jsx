@@ -5,6 +5,11 @@ import { apiRequest } from '../services/api'
 function Home() {
   const [text, setText] = useState('')
   const [posts, setPosts] = useState([])
+  const [page, setPage] = useState(0)
+  const [totalPages, setTotalPages] = useState(0)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+
   const { currentUser, token } = useAuth()
 
   const profileName = currentUser?.name
@@ -16,10 +21,13 @@ function Home() {
     }
 
     async function loadPosts() {
-      try {
-        const data = await apiRequest('/api/posts')
+      setLoading(true)
+      setError('')
 
-        const formattedPosts = data.map((post) => ({
+      try {
+        const data = await apiRequest(`/api/posts?page=${page}&size=10`)
+
+        const formattedPosts = data.content.map(post => ({
           id: post.id,
           name: post.user.name,
           username: `@${post.user.username}`,
@@ -27,13 +35,19 @@ function Home() {
         }))
 
         setPosts(formattedPosts)
+        setTotalPages(data.totalPages)
+
       } catch (error) {
         console.error('Error loading posts:', error)
+        setError('No se pudieron cargar las publicaciones.')
+
+      } finally {
+        setLoading(false)
       }
     }
 
     loadPosts()
-  }, [token, setPosts])
+  }, [token, page])
 
 
   async function publishPost() {
@@ -103,6 +117,13 @@ function Home() {
       </section>
 
       <section className="feed">
+        {loading && <p>Cargando publicaciones...</p>}
+
+        {error && <p>{error}</p>}
+        {!loading && !error && posts.length === 0 && (
+          <p>No hay publicaciones para mostrar.</p>
+        )}
+
         {posts.map((post) => (
           <article className="post" key={post.id}>
             <h3>{post.name}</h3>
@@ -110,6 +131,30 @@ function Home() {
             <p>{post.content}</p>
           </article>
         ))}
+
+        {totalPages > 1 && (
+          <div className="follow-pagination">
+            <button
+              type="button"
+              onClick={() => setPage(page - 1)}
+              disabled={page === 0 || loading}
+            >
+              Anterior
+            </button>
+
+            <span>
+              Página {page + 1} de {totalPages}
+            </span>
+
+            <button
+              type="button"
+              onClick={() => setPage(page + 1)}
+              disabled={page + 1 >= totalPages || loading}
+            >
+              Siguiente
+            </button>
+          </div>
+        )}
       </section>
     </div>
   )
