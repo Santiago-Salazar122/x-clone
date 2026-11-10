@@ -3,6 +3,9 @@ import { useParams, Link } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { useAuth } from '../AuthContext'
 import { apiRequest } from '../services/api'
+import Tweet from '../components/Tweet'
+import Pagination from '../components/Pagination'
+import UserCard from '../components/UserCard'
 
 const defaultProfile = {
   name: '',
@@ -33,28 +36,31 @@ function getSavedProfile(username) {
 
 function Profile() {
   const { username } = useParams()
+  const { currentUser, token } = useAuth()
+
   const [userPosts, setUserPosts] = useState([])
   const [postsLoading, setPostsLoading] = useState(true)
   const [postsError, setPostsError] = useState('')
-  const { currentUser, token } = useAuth()
+
   const [following, setFollowing] = useState(false)
   const [followersCount, setFollowersCount] = useState(0)
   const [followingCount, setFollowingCount] = useState(0)
   const [followError, setFollowError] = useState('')
+
   const [showFollowList, setShowFollowList] = useState(false)
   const [followListType, setFollowListType] = useState('followers')
   const [followList, setFollowList] = useState([])
   const [followListPage, setFollowListPage] = useState(0)
-
-
-  const isOwnProfile = currentUser?.username === username
-
+  const [followListTotalPages, setFollowListTotalPages] = useState(0)
 
   const [name, setName] = useState('')
   const [bio, setBio] = useState('')
   const [isEditing, setIsEditing] = useState(false)
   const [profileError, setProfileError] = useState('')
 
+  const isOwnProfile = currentUser?.username === username
+
+  // Load profile information
   useEffect(() => {
     let isActive = true
 
@@ -67,9 +73,7 @@ function Profile() {
       setBio(savedProfile.bio || defaultProfile.bio)
       setIsEditing(false)
 
-      if (!token) {
-        return
-      }
+      if (!token) return
 
       try {
         const user = await apiRequest(
@@ -95,12 +99,14 @@ function Profile() {
     }
   }, [username, token])
 
+  // Load user posts
   useEffect(() => {
     let isActive = true
 
-    const loadUserPosts = async () => {
+    async function loadUserPosts() {
       setPostsLoading(true)
       setPostsError('')
+
       if (!token) {
         setUserPosts([])
         setPostsLoading(false)
@@ -133,18 +139,20 @@ function Profile() {
     }
   }, [username, token])
 
-
+  // Load follow information
   useEffect(() => {
-    if (!token) {
-      setFollowing(false)
-      setFollowersCount(0)
-      setFollowingCount(0)
-      return
-    }
-
     let isActive = true
 
     async function loadFollowData() {
+      setFollowError('')
+
+      if (!token) {
+        setFollowing(false)
+        setFollowersCount(0)
+        setFollowingCount(0)
+        return
+      }
+
       try {
         const [followersData, followingData, statusData] =
           await Promise.all([
@@ -177,7 +185,7 @@ function Profile() {
     }
   }, [username, token])
 
-
+  // Load followers or following list
   async function loadFollowList(type, page = 0) {
     if (!token) return
 
@@ -188,6 +196,7 @@ function Profile() {
 
       setFollowList(data.content)
       setFollowListPage(data.number)
+      setFollowListTotalPages(data.totalPages)
       setFollowListType(type)
       setShowFollowList(true)
     } catch (error) {
@@ -195,8 +204,7 @@ function Profile() {
     }
   }
 
-
-
+  // Follow user
   async function handleFollow() {
     setFollowError('')
 
@@ -216,11 +224,39 @@ function Profile() {
       setFollowing(true)
       setFollowersCount((count) => count + 1)
     } catch (error) {
-      setFollowError(error.message || 'No se pudo conectar con el servidor.')
+      setFollowError(
+        error.message || 'No se pudo conectar con el servidor.'
+      )
     }
   }
 
+  // Unfollow user
+  async function handleUnfollow() {
+    setFollowError('')
 
+    if (!token) {
+      setFollowError('Debes iniciar sesión para dejar de seguir usuarios.')
+      return
+    }
+
+    try {
+      await apiRequest(
+        `/api/follows/${encodeURIComponent(username)}`,
+        {
+          method: 'DELETE'
+        }
+      )
+
+      setFollowing(false)
+      setFollowersCount((count) => Math.max(0, count - 1))
+    } catch (error) {
+      setFollowError(
+        error.message || 'No se pudo dejar de seguir al usuario.'
+      )
+    }
+  }
+
+  // Save profile changes
   async function saveProfile() {
     setProfileError('')
 
@@ -256,7 +292,6 @@ function Profile() {
     <div className="profile-page">
       <header>
         <h1>Perfil</h1>
-
         <Link to="/">← Volver al inicio</Link>
       </header>
 
@@ -290,10 +325,9 @@ function Profile() {
         {!isOwnProfile && (
           <button
             type="button"
-            onClick={handleFollow}
-            disabled={following}
+            onClick={following ? handleUnfollow : handleFollow}
           >
-            {following ? 'Siguiendo' : 'Seguir'}
+            {following ? 'Dejar de seguir' : 'Seguir'}
           </button>
         )}
 
@@ -345,7 +379,9 @@ function Profile() {
           <div className="follow-modal-content">
             <div className="follow-modal-header">
               <h2>
-                {followListType === 'followers' ? 'Seguidores' : 'Seguidos'}
+                {followListType === 'followers'
+                  ? 'Seguidores'
+                  : 'Seguidos'}
               </h2>
 
               <button
@@ -360,34 +396,18 @@ function Profile() {
               <p>No hay usuarios para mostrar.</p>
             ) : (
               followList.map((user) => (
-                <div className="follow-user" key={user.id}>
-                  <Link to={`/users/${user.username}`}>
-                    <strong>{user.name}</strong>
-                    <span>@{user.username}</span>
-                  </Link>
-                </div>
+                <UserCard key={user.id} user={user} />
               ))
             )}
 
-            <div className="follow-pagination">
-              <button
-                type="button"
-                onClick={() => loadFollowList(followListType, followListPage - 1)}
-                disabled={followListPage === 0}
-              >
-                Anterior
-              </button>
-
-              <span>Página {followListPage + 1}</span>
-
-              <button
-                type="button"
-                onClick={() => loadFollowList(followListType, followListPage + 1)}
-                disabled={followList.length < 10}
-              >
-                Siguiente
-              </button>
-            </div>
+            <Pagination
+              page={followListPage}
+              totalPages={followListTotalPages}
+              loading={false}
+              onPageChange={(newPage) =>
+                loadFollowList(followListType, newPage)
+              }
+            />
           </div>
         </div>
       )}
@@ -403,12 +423,7 @@ function Profile() {
           <p>Este usuario todavía no tiene publicaciones.</p>
         ) : (
           userPosts.map((post) => (
-            <article className="post" key={post.id}>
-              <h3>{post.user.name}</h3>
-              <p>@{post.user.username}</p>
-              <p>{post.content}</p>
-              <p>{new Date(post.createdAt).toLocaleString()}</p>
-            </article>
+            <Tweet key={post.id} post={post} />
           ))
         )}
       </section>

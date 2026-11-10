@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '../AuthContext'
 import { apiRequest } from '../services/api'
+import Tweet from '../components/Tweet'
+import Pagination from '../components/Pagination'
+
 
 function Home() {
   const [text, setText] = useState('')
@@ -27,12 +30,7 @@ function Home() {
       try {
         const data = await apiRequest(`/api/posts?page=${page}&size=10`)
 
-        const formattedPosts = data.content.map(post => ({
-          id: post.id,
-          name: post.user.name,
-          username: `@${post.user.username}`,
-          content: post.content
-        }))
+        const formattedPosts = data.content
 
         setPosts(formattedPosts)
         setTotalPages(data.totalPages)
@@ -65,13 +63,7 @@ function Home() {
         body: JSON.stringify({ content })
       })
 
-      const newPost = {
-        id: data.id,
-        name: data.user.name,
-        username: `@${data.user.username}`,
-        content: data.content,
-
-      }
+      const newPost = data
 
       setPosts((currentPosts) => [newPost, ...currentPosts])
       setText('')
@@ -125,36 +117,15 @@ function Home() {
         )}
 
         {posts.map((post) => (
-          <article className="post" key={post.id}>
-            <h3>{post.name}</h3>
-            <p>{post.username}</p>
-            <p>{post.content}</p>
-          </article>
+          <Tweet key={post.id} post={post} />
         ))}
 
-        {totalPages > 1 && (
-          <div className="follow-pagination">
-            <button
-              type="button"
-              onClick={() => setPage(page - 1)}
-              disabled={page === 0 || loading}
-            >
-              Anterior
-            </button>
-
-            <span>
-              Página {page + 1} de {totalPages}
-            </span>
-
-            <button
-              type="button"
-              onClick={() => setPage(page + 1)}
-              disabled={page + 1 >= totalPages || loading}
-            >
-              Siguiente
-            </button>
-          </div>
-        )}
+        <Pagination
+          page={page}
+          totalPages={totalPages}
+          loading={loading}
+          onPageChange={setPage}
+        />
       </section>
     </div>
   )
